@@ -1,0 +1,21 @@
+.sidebar {
+    display: flex;
+    /*allows column to be stacked together */
+    flex-direction: column;
+    /* gets the sidebar to take up 25% of screen */
+    flex: 0.25;
+    height: 100vh;
+    background-color: #2f3135;
+}
+
+.sidebar__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #2f3135;
+    color: white;
+    /* adds border effect on bottom */
+    border-bottom: 3px solid #26282c;
+
+}
