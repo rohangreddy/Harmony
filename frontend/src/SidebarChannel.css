@@ -1,0 +1,22 @@
+/* Change color/background of the h4 text when hovering */
+.sidebarChannel:hover > h4 {
+    color: white;
+    background-color: #40464b;
+}
+
+/* Display options for h4 text */
+.sidebarChannel > h4 {
+    display: flex;
+    padding-left: 15px;
+    align-items: center;
+    background-color: #2f3135;
+    color: gray;
+    cursor: pointer;
+
+}
+
+/* Styling for hash */
+.sidebarChannel__hash {
+    font-size: 30px;
+    padding: 8px;
+}
