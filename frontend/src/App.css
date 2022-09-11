@@ -1,0 +1,4 @@
+/* Allows for the flex options of the sidebar and chat to take effect */
+.app {
+    display: flex;
+}
