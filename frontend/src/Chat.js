@@ -5,6 +5,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import GifBoxIcon from '@mui/icons-material/GifBox';
+import Message from './Message';
 
 
 function Chat() {
@@ -13,7 +14,9 @@ function Chat() {
         <ChatHeader />
 
         <div className="chat__messages">
-
+            <Message />
+            <Message />
+            <Message />
         </div>
 
         <div className="chat__input">
