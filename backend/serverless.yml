@@ -10,6 +10,7 @@ plugins:
 custom:
   wsgi:
     app: app.app
+    whoami: app.app
     packRequirements: false
   pythonRequirements:
     dockerizePip: non-linux
@@ -22,7 +23,11 @@ provider:
  
 functions:
   app:
-    handler: wsgi.handler
+    handler: wsgi_handler.handler
     events:
       - http: ANY /
-      - http: 'ANY {proxy+}'
+      - http: 'ANY /{proxy+}'
+  whoami:
+    handler: wsgi_handler.handler
+    events:
+      - http: ANY /whoami

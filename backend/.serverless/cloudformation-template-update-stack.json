@@ -77,6 +77,12 @@
         "LogGroupName": "/aws/lambda/serverless-flask-dev-app"
       }
     },
+    "WhoamiLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/serverless-flask-dev-whoami"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -161,7 +167,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/serverless-flask/dev/1663718974128-2022-09-21T00:09:34.128Z/serverless-flask.zip"
+          "S3Key": "serverless/serverless-flask/dev/1663977780751-2022-09-24T00:03:00.751Z/serverless-flask.zip"
         },
         "Handler": "wsgi_handler.handler",
         "Runtime": "python3.8",
@@ -179,14 +185,49 @@
         "AppLogGroup"
       ]
     },
-    "AppLambdaVersionxSrlvrQIrUSHKrDOCeWrMuq6AfThV68jSEG7NKBG0": {
+    "WhoamiLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/serverless-flask/dev/1663977780751-2022-09-24T00:03:00.751Z/serverless-flask.zip"
+        },
+        "Handler": "wsgi_handler.handler",
+        "Runtime": "python3.8",
+        "FunctionName": "serverless-flask-dev-whoami",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "WhoamiLogGroup"
+      ]
+    },
+    "AppLambdaVersion8ytvVLfRnVTCUOT7stefKsbkTawCHkYJgy0GGUwb2o": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "AppLambdaFunction"
         },
-        "CodeSha256": "5Fto8cXJaNBPfFeUXA3d3ShY0ObdQJJgkhynhnZifEk="
+        "CodeSha256": "/OLwzIoj5rCPTdxg8zFU4KSRem/sxkTram4muK2jiyM="
+      }
+    },
+    "WhoamiLambdaVersionAYvq1DqRb5sxAKrK1P68wHu1eYXltr341UPlrL5X4U": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "WhoamiLambdaFunction"
+        },
+        "CodeSha256": "/OLwzIoj5rCPTdxg8zFU4KSRem/sxkTram4muK2jiyM="
       }
     },
     "ApiGatewayRestApi": {
@@ -211,6 +252,21 @@
           ]
         },
         "PathPart": "{proxy+}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceWhoami": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "whoami",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -311,7 +367,53 @@
         "AppLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1663718965645": {
+    "ApiGatewayMethodWhoamiAny": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "ANY",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceWhoami"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "WhoamiLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "WhoamiLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1663977776430": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -321,7 +423,8 @@
       },
       "DependsOn": [
         "ApiGatewayMethodAny",
-        "ApiGatewayMethodProxyVarAny"
+        "ApiGatewayMethodProxyVarAny",
+        "ApiGatewayMethodWhoamiAny"
       ]
     },
     "AppLambdaPermissionApiGateway": {
@@ -330,6 +433,43 @@
         "FunctionName": {
           "Fn::GetAtt": [
             "AppLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "WhoamiLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "WhoamiLambdaFunction",
             "Arn"
           ]
         },
@@ -374,10 +514,19 @@
     "AppLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "AppLambdaVersionxSrlvrQIrUSHKrDOCeWrMuq6AfThV68jSEG7NKBG0"
+        "Ref": "AppLambdaVersion8ytvVLfRnVTCUOT7stefKsbkTawCHkYJgy0GGUwb2o"
       },
       "Export": {
         "Name": "sls-serverless-flask-dev-AppLambdaFunctionQualifiedArn"
+      }
+    },
+    "WhoamiLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "WhoamiLambdaVersionAYvq1DqRb5sxAKrK1P68wHu1eYXltr341UPlrL5X4U"
+      },
+      "Export": {
+        "Name": "sls-serverless-flask-dev-WhoamiLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
