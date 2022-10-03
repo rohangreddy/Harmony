@@ -1,8 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from '../features/counterSlice';
-
+import userReducer from '../features/userSlice';
+import appReducer from '../features/appSlice';
+// Store is data layer for application
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    // Reducer listens to actions
+    user: userReducer,
+    app: appReducer,
   },
 });
